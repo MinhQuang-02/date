@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
@@ -12,8 +13,8 @@ app.use(express.static(__dirname)); // Phục vụ các file tĩnh từ thư m�
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'quanggminhh040202@gmail.com', // Email của bạn
-        pass: 'meehhrwhplxsevfy' // App Password
+        user: process.env.GMAIL_USER, // Email của bạn
+        pass: process.env.GMAIL_PASS // App Password
     }
 });
 
@@ -66,8 +67,8 @@ app.post('/send-email', async (req, res) => {
 
         // Cấu hình email
         const mailOptions = {
-            from: 'quanggminhh040202@gmail.com',
-            to: 'quanggminhh123@gmail.com',
+            from: process.env.GMAIL_USER,
+            to: process.env.MAIL_TO,
             subject: 'New Date Request! 💕',
             html: htmlContent
         };
