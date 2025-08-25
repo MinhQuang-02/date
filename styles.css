@@ -1573,3 +1573,126 @@ body:hover .scrollbar-decoration {
 .dark-mode .big-message {
     color: #ff8bb3;
 }
+
+
+.celebration-icon {
+    font-size: 48px;
+    margin: 15px 0;
+    animation: bounce 2s infinite;
+}
+
+.selection-status {
+    margin: 15px 0;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: rgba(255, 107, 149, 0.05);
+    color: #888;
+}
+
+.selection-status.active {
+    background: rgba(255, 107, 149, 0.1);
+    color: #ff6b95;
+    font-weight: 500;
+}
+
+.dark-mode .selection-status.active {
+    background: rgba(255, 139, 179, 0.15);
+    color: #ff8bb3;
+}
+
+.final-message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 15px;
+    background: rgba(255, 107, 149, 0.05);
+    text-align: center;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+.final-message.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.final-message .message {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.final-message .btn {
+    margin-top: 10px;
+}
+
+.dark-mode .final-message {
+    background: rgba(255, 139, 179, 0.1);
+}
+
+#confirm-food-btn, #confirm-drink-btn {
+    margin-top: 20px;
+}
+
+#completion-card .message {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+#completion-card .email-container {
+    margin-top: 25px;
+}
+
+#completion-card .email-success {
+    font-size: 16px;
+}
+
+.perpetual-hearts {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.perpetual-heart {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff6b95"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat;
+    background-size: contain;
+    opacity: 0;
+    animation: floatPerpetual 10s linear infinite;
+}
+
+@keyframes floatPerpetual {
+    0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.7;
+    }
+    90% {
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateY(-10vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+.dark-mode .perpetual-heart {
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff8bb3"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat;
+}
+
+.form-error {
+    color: #ff3366;
+    font-size: 14px;
+    margin-bottom: 15px;
+    text-align: center;
+}

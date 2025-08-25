@@ -409,39 +409,55 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const noteError = document.getElementById('note-error');
+
     // Save note button click handler
     saveNoteBtn.addEventListener('click', () => {
         userSelections.note = noteTextarea.value.trim();
-        noteCard.classList.add('hidden');
-        setTimeout(() => {
-            completionCard.classList.remove('hidden');
-            completionCard.classList.add('show');
-            createHeartCelebration(document.getElementById('completion-hearts'));
+        
+        // Show loading state
+        saveNoteBtn.disabled = true;
+        saveNoteBtn.innerHTML = 'Sending...';
+        noteError.style.display = 'none';
 
-            // Gửi email qua API
-            fetch('http://192.168.1.7:3000/send-email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(userSelections)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Email sent:', data);
-                if (data.success) {
-                    emailSuccess.textContent = '✅ Invitation sent successfully!';
-                } else {
-                    throw new Error(data.message);
-                }
-                emailSuccess.style.display = 'block';
-            })
-            .catch(error => {
-                console.error('Error sending email:', error);
-                emailSuccess.textContent = "⚠️ Couldn't send invitation email";
-                emailSuccess.style.display = 'block';
-            });
-        }, 500);
+        // Gửi email qua API
+        fetch('http://localhost:3000/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userSelections)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network error. Please check if the server is running.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // On success, show completion card
+                setTimeout(() => {
+                    noteCard.classList.add('hidden');
+                    completionCard.classList.remove('hidden');
+                    completionCard.classList.add('show');
+                    createHeartCelebration(document.getElementById('completion-hearts'));
+                    document.getElementById('email-success').style.display = 'block';
+                }, 500); // Delay for smooth transition
+            } else {
+                throw new Error(data.message || 'An unknown error occurred.');
+            }
+        })
+        .catch(error => {
+            console.error('Error sending email:', error);
+            // Show error message
+            noteError.textContent = `⚠️ ${error.message || "Could not send invitation. Please try again."}`;
+            noteError.style.display = 'block';
+            
+            // Restore button state
+            saveNoteBtn.disabled = false;
+            saveNoteBtn.innerHTML = 'Continue ♥';
+        });
     });
 
     // Email success element
