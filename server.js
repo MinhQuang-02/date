@@ -1,20 +1,26 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // Phục vụ các file tĩnh từ thư mục hiện tại
+// Serve static frontend files (index.html, styles, scripts)
+app.use(express.static(path.join(__dirname)));
 
-// Cấu hình transporter cho Gmail
+// Root route -> index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Cấu hình transporter cho Gmail (lấy từ biến môi trường)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.GMAIL_USER, // Email của bạn
-        pass: process.env.GMAIL_PASS // App Password
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
     }
 });
 
@@ -82,13 +88,7 @@ app.post('/send-email', async (req, res) => {
     }
 });
 
-// Route mặc định để phục vụ trang index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-    console.log('Open the above URL in your browser to see the application');
+    console.log(`Server is running on port ${PORT}`);
 });

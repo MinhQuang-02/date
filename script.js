@@ -3,11 +3,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const darkModeToggle = document.getElementById('darkmode-toggle');
     darkModeToggle.addEventListener('change', () => {
         document.documentElement.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', darkModeToggle.checked);
     });
 
-    // Sync toggle with initial dark mode state
-    if (document.documentElement.classList.contains('dark-mode')) {
+    // Check saved dark mode preference
+    if (localStorage.getItem('darkMode') === 'true') {
         darkModeToggle.checked = true;
+        document.documentElement.classList.add('dark-mode');
     }
 
     // Background music setup
@@ -54,7 +56,11 @@ document.addEventListener('DOMContentLoaded', function() {
         note: ''
     };
 
-    // Selections are not saved, user starts fresh each time.
+    // Load saved selections
+    const savedSelections = localStorage.getItem('dateSelections');
+    if (savedSelections) {
+        userSelections = JSON.parse(savedSelections);
+    }
 
     // Create cherry blossoms
     function createCherryBlossoms() {
@@ -158,7 +164,9 @@ document.addEventListener('DOMContentLoaded', function() {
             locationTiles.forEach(t => t.classList.remove('selected'));
             tile.classList.add('selected');
             userSelections.location = tile.dataset.location;
-            document.getElementById('selected-location-message').classList.remove('hidden');
+            const selectedLocationMsg = document.getElementById('selected-location-message');
+            selectedLocationMsg.classList.remove('hidden');
+            selectedLocationMsg.classList.add('show');
             confirmLocationBtn.style.display = 'inline-block';
         });
     });
@@ -171,7 +179,9 @@ document.addEventListener('DOMContentLoaded', function() {
             locationTiles.forEach(t => t.classList.remove('selected'));
             customLocationBtn.classList.add('selected');
             userSelections.location = customInput;
-            document.getElementById('selected-location-message').classList.remove('hidden');
+            const selectedLocationMsg = document.getElementById('selected-location-message');
+            selectedLocationMsg.classList.remove('hidden');
+            selectedLocationMsg.classList.add('show');
             confirmLocationBtn.style.display = 'inline-block';
         }
     });
@@ -282,7 +292,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             updateFoodSelectionStatus();
-            document.getElementById('selected-food-message').classList.remove('hidden');
+            const selectedFoodMsg = document.getElementById('selected-food-message');
+            selectedFoodMsg.classList.remove('hidden');
+            selectedFoodMsg.classList.add('show');
             confirmFoodBtn.style.display = 'inline-block';
         });
     });
@@ -296,7 +308,9 @@ document.addEventListener('DOMContentLoaded', function() {
             userSelections.food.push(customInput);
             selectedFoodCount++;
             updateFoodSelectionStatus();
-            document.getElementById('selected-food-message').classList.remove('hidden');
+            const selectedFoodMsg = document.getElementById('selected-food-message');
+            selectedFoodMsg.classList.remove('hidden');
+            selectedFoodMsg.classList.add('show');
             confirmFoodBtn.style.display = 'inline-block';
         }
     });
@@ -352,7 +366,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             updateDrinkSelectionStatus();
-            document.getElementById('selected-drink-message').classList.remove('hidden');
+            const selectedDrinkMsg = document.getElementById('selected-drink-message');
+            selectedDrinkMsg.classList.remove('hidden');
+            selectedDrinkMsg.classList.add('show');
             confirmDrinkBtn.style.display = 'inline-block';
         });
     });
@@ -366,7 +382,9 @@ document.addEventListener('DOMContentLoaded', function() {
             userSelections.drinks.push(customInput);
             selectedDrinkCount++;
             updateDrinkSelectionStatus();
-            document.getElementById('selected-drink-message').classList.remove('hidden');
+            const selectedDrinkMsg = document.getElementById('selected-drink-message');
+            selectedDrinkMsg.classList.remove('hidden');
+            selectedDrinkMsg.classList.add('show');
             confirmDrinkBtn.style.display = 'inline-block';
         }
     });
@@ -409,55 +427,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const noteError = document.getElementById('note-error');
-
     // Save note button click handler
     saveNoteBtn.addEventListener('click', () => {
         userSelections.note = noteTextarea.value.trim();
-        
-        // Show loading state
-        saveNoteBtn.disabled = true;
-        saveNoteBtn.innerHTML = 'Sending...';
-        noteError.style.display = 'none';
+        noteCard.classList.add('hidden');
+        setTimeout(() => {
+            completionCard.classList.remove('hidden');
+            completionCard.classList.add('show');
+            createHeartCelebration(document.getElementById('completion-hearts'));
 
-        // Gửi email qua API
-        fetch('http://localhost:3000/send-email', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(userSelections)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network error. Please check if the server is running.');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // On success, show completion card
-                setTimeout(() => {
-                    noteCard.classList.add('hidden');
-                    completionCard.classList.remove('hidden');
-                    completionCard.classList.add('show');
-                    createHeartCelebration(document.getElementById('completion-hearts'));
-                    document.getElementById('email-success').style.display = 'block';
-                }, 500); // Delay for smooth transition
-            } else {
-                throw new Error(data.message || 'An unknown error occurred.');
-            }
-        })
-        .catch(error => {
-            console.error('Error sending email:', error);
-            // Show error message
-            noteError.textContent = `⚠️ ${error.message || "Could not send invitation. Please try again."}`;
-            noteError.style.display = 'block';
-            
-            // Restore button state
-            saveNoteBtn.disabled = false;
-            saveNoteBtn.innerHTML = 'Continue ♥';
-        });
+            // Save selections to localStorage
+            localStorage.setItem('dateSelections', JSON.stringify(userSelections));
+
+            // Gửi email qua API (relative path để chạy cùng domain)
+            fetch('/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userSelections)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Email sent:', data);
+                if (data.success) {
+                    emailSuccess.textContent = '✅ Invitation sent successfully!';
+                } else {
+                    throw new Error(data.message);
+                }
+                emailSuccess.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error sending email:', error);
+                emailSuccess.textContent = "⚠️ Couldn't send invitation email";
+                emailSuccess.style.display = 'block';
+            });
+        }, 500);
     });
 
     // Email success element
@@ -481,8 +486,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle dark mode based on system preference
     const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    darkModeMediaQuery.addListener((e) => {
-        document.documentElement.classList.toggle('dark-mode', e.matches);
-        darkModeToggle.checked = e.matches;
-    });
+    const onSystemThemeChange = (e) => {
+        if (!localStorage.getItem('darkMode')) {
+            document.documentElement.classList.toggle('dark-mode', e.matches);
+            darkModeToggle.checked = e.matches;
+        }
+    };
+    if (darkModeMediaQuery.addEventListener) {
+        darkModeMediaQuery.addEventListener('change', onSystemThemeChange);
+    } else if (darkModeMediaQuery.addListener) {
+        darkModeMediaQuery.addListener(onSystemThemeChange);
+    }
 });
